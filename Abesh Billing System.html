@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abesh Hotel Billing System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #8b0000;
+            --secondary: #008080;
+            --dark: #2d3748;
+            --light: #f7fafc;
+            --border: #e2e8f0;
+            --success: #2f855a;
+            --card-bg: #ffffff;
+            --input-bg: #fbfbfb;
+            --text-main: #2d3748;
+            --text-muted: #718096;
+            --tab-inactive: #edf2f7;
+            --banner-bg: #fff5f5;
+            --banner-text: #8b0000;
+        }
+
+        /* Premium Dark Mode Theme with Improved Color Grading */
+        [data-theme="dark"] {
+            --light: #0f172a;
+            --card-bg: #1e293b;
+            --border: #334155;
+            --input-bg: #0f172a;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --tab-inactive: #334155;
+            --secondary: #0d9488;
+            --primary: #ef4444;
+            --success: #10b981;
+            --banner-bg: #451212;
+            --banner-text: #fee2e2;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 12px;
+            background-color: var(--light);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .container {
+            width: 100%;
+            max-width: 520px;
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+            transition: background-color 0.3s, border-color 0.3s;
+        }
+        
+        /* Tab Navigation Bar CSS */
+        .tabs-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 10px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: var(--tab-inactive);
+            color: var(--text-main);
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .tab-btn.active {
+            background: var(--secondary);
+            color: white;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        #printableReceiptArea, #summaryBox {
+            background: var(--card-bg);
+            padding: 5px;
+            transition: background-color 0.3s;
+        }
+        .top-bar-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            gap: 6px;
+        }
+        .right-actions {
+            display: flex;
+            gap: 6px;
+        }
+        .btn-lang, .btn-theme {
+            background: var(--card-bg);
+            color: var(--secondary);
+            border: 2px solid var(--secondary);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+        .btn-lang:hover, .btn-theme:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        .btn-reset-counter {
+            background: var(--card-bg);
+            color: var(--primary);
+            border: 1px solid var(--primary);
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .btn-reset-counter:hover {
+            background: var(--primary);
+            color: white;
+        }
+        .header {
+            text-align: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 8px;
+            margin-bottom: 15px;
+        }
+        .header h1 {
+            margin: 0;
+            color: var(--primary);
+            font-size: 24px;
+            font-weight: 800;
+        }
+        .header p {
+            margin: 4px 0 0 0;
+            font-size: 14px;
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+        .bill-number-banner {
+            text-align: center;
+            margin-top: 6px;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--banner-text);
+            background: var(--banner-bg);
+            padding: 4px 12px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .center-wrapper {
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .live-datetime {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-main);
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        .meta-input {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .meta-input input, .meta-input select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: var(--input-bg);
+            color: var(--text-main);
+            transition: border-color 0.2s;
+        }
+        .menu-selection {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            margin-top: 20px;
+        }
+        .label-text {
+            font-size: 13px;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 6px;
+            display: block;
+        }
+        .menu-selection select, .price-edit-box input, .custom-item-box input, .search-bar {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 15px;
+            margin-bottom: 12px;
+            background-color: var(--card-bg);
+            color: var(--text-main);
+        }
+        .search-bar {
+            border: 2px solid var(--secondary);
+            font-weight: 500;
+        }
+        .subcat-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+        .btn-subcat {
+            background: var(--tab-inactive);
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            color: var(--text-main);
+            transition: 0.2s;
+        }
+        .btn-subcat.active {
+            background: var(--secondary);
+            color: white;
+        }
+        .qty-picker {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 6px;
+            margin-bottom: 15px;
+        }
+        .btn-qty-opt {
+            background: var(--card-bg);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+            padding: 10px 0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn-qty-opt.active {
+            background: var(--secondary);
+            color: white;
+            border-color: var(--secondary);
+        }
+        .custom-qty-input {
+            grid-column: span 2;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            background: var(--card-bg);
+            color: var(--text-main);
+        }
+        .price-edit-box, .custom-item-box {
+            background: var(--tab-inactive);
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+        .add-btn {
+            width: 100%;
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+        }
+        .add-btn.success-pop {
+            background: var(--success) !important;
+            transform: scale(0.98);
+        }
+        .bill-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .bill-table th {
+            border-bottom: 2px solid var(--border);
+            padding: 8px 4px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .bill-table td {
+            border-bottom: 1px solid var(--border);
+            padding: 10px 4px;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+        .text-right { text-align: right !important; }
+        .text-center { text-align: center !important; }
+        
+        .qty-input {
+            width: 45px;
+            padding: 4px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            background: var(--card-bg);
+            color: var(--text-main);
+        }
+        .total-row {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        .total-row td {
+            border-top: 2px solid var(--primary);
+            padding-top: 12px;
+        }
+        .remove-btn {
+            background: none;
+            border: none;
+            color: #ef4444;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .signatures {
+            margin-top: 40px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+        }
+        .sig-line {
+            border-top: 1px dashed var(--text-muted);
+            width: 44%;
+            text-align: center;
+            padding-top: 6px;
+            font-size: 13px;
+            color: var(--text-main);
+            font-weight: bold;
+        }
+        .sig-name {
+            display: block;
+            font-size: 14px;
+            color: var(--text-main);
+            margin-bottom: 4px;
+            min-height: 18px;
+        }
+        .actions {
+            margin-top: 25px;
+            display: flex;
+            gap: 12px;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-print { background: var(--success); color: white; }
+        .btn-clear { background: #64748b; color: white; }
+
+        .hide-for-image { display: none !important; }
+        .qty-static-text { display: none; }
+        .image-render-mode .qty-input { display: none !important; }
+        .image-render-mode .qty-static-text { display: inline-block !important; }
+        
+        /* Forces crisp light receipt styles during download capture */
+        .image-render-mode {
+            background: #ffffff !important;
+            color: #2d3748 !important;
+        }
+        .image-render-mode .header h1 { color: #8b0000 !important; }
+        .image-render-mode .header p { color: #718096 !important; }
+        .image-render-mode .bill-number-banner { background: #fff5f5 !important; color: #8b0000 !important; }
+        .image-render-mode .live-datetime { color: #4a5568 !important; }
+        .image-render-mode .bill-table th { color: #718096 !important; border-bottom: 2px solid #e2e8f0 !important; }
+        .image-render-mode .bill-table td { color: #2d3748 !important; border-bottom: 1px solid #edf2f7 !important; }
+        .image-render-mode .total-row { color: #8b0000 !important; }
+        .image-render-mode .total-row td { border-top: 2px solid #8b0000 !important; }
+        .image-render-mode .sig-line { border-top: 1px dashed #a0aec0 !important; color: #2d3748 !important; }
+        .image-render-mode .sig-name { color: #1a202c !important; }
+
+        /* Duty Section Specific Custom Styling */
+        .duty-card {
+            background: #f0fdfa;
+            border: 2px dashed var(--secondary);
+            padding: 16px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            transition: background-color 0.3s;
+        }
+        [data-theme="dark"] .duty-card {
+            background: #111827;
+        }
+        .duty-status {
+            font-size: 13px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+        .duty-btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .btn-duty {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-start { background: var(--secondary); color: white; }
+        .btn-end { background: var(--primary); color: white; }
+        .btn-reset-duty { background: #475569; color: white; }
+        .btn-download-sum { background: #2563eb; color: white; }
+        
+        .summary-modal {
+            display: none;
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Configuration Control Hub -->
+    <div class="top-bar-actions">
+        <button class="btn-reset-counter" onclick="manuallyResetBillCounter()" id="btnResetCounter">🔢 রিসেট বিল নম্বর</button>
+        <div class="right-actions">
+            <button class="btn-theme" onclick="toggleTheme()" id="themeBtn">🌙</button>
+            <button class="btn-lang" onclick="toggleLanguage()" id="langBtn">English</button>
+        </div>
+    </div>
+
+    <!-- Layout Section Navigation Bars -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" id="tabBill" onclick="switchTab('bill')">📝 ক্রিয়েট বিল (Bill)</button>
+        <button class="tab-btn" id="tabShift" onclick="switchTab('shift')">💼 শিফট সামারি (Shift)</button>
+    </div>
+
+    <!-- TAB SECTION 1: BILL CREATION ENGINE -->
+    <div id="contentBill" class="tab-content active">
+        <!-- Receipt Output Area -->
+        <div id="printableReceiptArea">
+            <div class="header">
+                <h1 id="hotelName">আবেশ হোটেল এন্ড রেস্টুরেন্ট</h1>
+                <p id="hotelBranch">শাখা-৪</p>
+                <div class="center-wrapper">
+                    <div class="bill-number-banner" id="billNumberDisplay">বিল নং: ১</div>
+                </div>
+            </div>
+
+            <div class="live-datetime" id="liveDateTime"></div>
+
+            <div class="meta-input" id="metaInputContainer">
+                <select id="waiterSelect" onchange="handleWaiterSelection()">
+                    <!-- Options dynamically filled by JS -->
+                </select>
+                <input type="text" id="supervisorInput" placeholder="সুপারভাইজার এর নাম" oninput="saveSupervisorAndUpdateSig()">
+            </div>
+
+            <table class="bill-table">
+                <thead>
+                    <tr>
+                        <th style="text-align: left;" id="thItem">আইটেম</th>
+                        <th class="text-right" id="thPrice">মূল্য</th>
+                        <th class="text-center" id="thQty">পরিমাণ</th>
+                        <th class="text-right" id="thTotal">মোট</th>
+                        <th class="action-column"></th>
+                    </tr>
+                </thead>
+                <tbody id="billItems"></tbody>
+                <tfoot>
+                    <tr class="total-row">
+                        <td colspan="3" id="tdGrandTotal">সর্বমোট:</td>
+                        <td class="text-right" id="grandTotalVal">০ ৳</td>
+                        <td class="action-column"></td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div class="signatures">
+                <div class="sig-line">
+                    <span class="sig-name" id="printWaiterName"></span>
+                    <span id="sigWaiterLabel">ওয়েটার স্বাক্ষর</span>
+                </div>
+                <div class="sig-line">
+                    <span class="sig-name" id="printSupervisorName"></span>
+                    <span id="sigSupervisorLabel">সুপারভাইজার স্বাক্ষর</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Operations Interface -->
+        <div class="menu-selection" id="controlPanel">
+            <label class="label-text" id="lblCategory">ক্যাটাগরি নির্বাচন করুন</label>
+            <select id="categorySelect" onchange="handleCategoryChange()">
+                <option value="breakfast">সকালের নাস্তা (Breakfast)</option>
+                <option value="lunch">দুপুরের খাবার (Lunch)</option>
+                <option value="dinner">বিকালের নাস্তা ও কাবাব (Dinner & Kabab)</option>
+                <option value="beverage">পানি ও কোল্ড ড্রিংকস (Beverage & Extras)</option>
+                <option value="custom">-- নিজস্ব খাবার যোগ করুন (Custom Item) --</option>
+            </select>
+
+            <div id="standardItemPanel">
+                <input type="text" id="searchBar" class="search-bar" placeholder="খাবার খুঁজুন (Search Food Name)..." oninput="populateDropdown()">
+                <div id="subcatWrapper" class="subcat-container"></div>
+
+                <label class="label-text" id="lblItem">খাবার নির্বাচন করুন</label>
+                <select id="itemSelect" onchange="updatePriceEditField()"></select>
+                
+                <div class="price-edit-box">
+                    <label class="label-text" id="lblEditPrice">মূল্য পরিবর্তন করুন (প্রয়োজন হলে):</label>
+                    <input type="number" id="editablePrice" min="0">
+                </div>
+            </div>
+
+            <div id="customItemPanel" style="display: none;">
+                <div class="custom-item-box">
+                    <label class="label-text" id="lblCustomName">খাবারের নাম লিখুন:</label>
+                    <input type="text" id="customItemName" placeholder="উদা: স্পেশাল ডেজার্ট">
+                    <label class="label-text" id="lblCustomPrice">মূল্য নির্ধারণ করুন:</label>
+                    <input type="number" id="customItemPrice" placeholder="৳" min="0">
+                </div>
+            </div>
+
+            <label class="label-text" id="lblQtySelect">পরিমাণ নির্বাচন করুন (Quantity)</label>
+            <div class="qty-picker">
+                <button type="button" class="btn-qty-opt active" onclick="setQuickQty(1, this)">1</button>
+                <button type="button" class="btn-qty-opt" onclick="setQuickQty(2, this)">2</button>
+                <button type="button" class="btn-qty-opt" onclick="setQuickQty(3, this)">3</button>
+                <button type="button" class="btn-qty-opt" onclick="setQuickQty(4, this)">4</button>
+                <button type="button" class="btn-qty-opt" onclick="setQuickQty(5, this)">5</button>
+                <input type="number" id="customQtyInput" class="custom-qty-input" placeholder="অন্যান্য (6+)" min="1" oninput="handleCustomQty(this)">
+            </div>
+            
+            <button class="add-btn" onclick="addItem()" id="addBtn">আইটেম যোগ করুন</button>
+        </div>
+
+        <div class="actions" id="actionPanel">
+            <button class="btn-action btn-print" onclick="downloadBillAsImage()" id="btnPrint">মেক বিল / ডাউনলোড ছবি</button>
+            <button class="btn-action btn-clear" onclick="clearBill()" id="btnClear">রিসেট</button>
+        </div>
+    </div>
+
+    <!-- TAB SECTION 2: SHIFT SUMMARY MODULE -->
+    <div id="contentShift" class="tab-content">
+        <div class="duty-card">
+            <div class="duty-status" id="dutyStatusText">🛑 ডিউটি সেশন বন্ধ আছে। শুরু করতে নিচে ক্লিক করুন।</div>
+            <div class="duty-btn-group">
+                <button class="btn-duty btn-start" id="btnStartDuty" onclick="startDutySession()">🕒 ডিউটি শুরু করুন</button>
+                <button class="btn-duty btn-end" id="btnEndDuty" onclick="generateDutySummary()" style="display:none;">📊 ডিউটি শেষ ও সামারি</button>
+                <button class="btn-duty btn-download-sum" id="btnDownloadSum" onclick="downloadDutySummaryImage()" style="display:none;">📥 ডাউনলোড সামারি</button>
+                <button class="btn-duty btn-reset-duty" id="btnResetDuty" onclick="resetDutySession()" style="display:none;">🔄 নতুন শিফট শুরু</button>
+            </div>
+            
+            <div class="summary-modal" id="summaryBox">
+                <h3 style="margin: 0 0 8px 0; color: var(--primary); text-align: center;" id="sumTitle">📋 আজকের ডিউটি সেশন রিপোর্ট</h3>
+                <p style="font-size:12px; margin: 4px 0;" id="sumStartText"></p>
+                <p style="font-size:12px; margin: 4px 0;" id="sumEndText"></p>
+                <hr style="border: 0; border-top: 1px solid var(--border); margin: 8px 0;">
+                <table class="bill-table" style="font-size: 13px;">
+                    <thead>
+                        <tr>
+                            <th style="text-align:left;" id="sumThFood">খাবারের নাম</th>
+                            <th class="text-center" id="sumThQty">মোট পরিমাণ</th>
+                            <th class="text-right" id="sumThTotal">মোট টাকা</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryList"></tbody>
+                    <tfoot>
+                        <tr style="font-weight: bold; color: var(--primary);">
+                            <td colspan="2" style="padding-top:8px;" id="sumTotalLabel">সর্বমোট কালেকশন:</td>
+                            <td class="text-right" style="padding-top:8px;" id="sumTotalVal">৳ ০</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentLang = 'bn';
+    let bill = [];
+    let selectedSubcat = 'ALL';
+    let selectedQuantityValue = 1;
+    let currentBillNo = 1;
+
+    let defaultWaiters = ["রাকিব", "আরিফ", "সোহেল"];
+    let dutyActive = false;
+    let dutyStartTime = "";
+    let dutyHistoryLog = {}; 
+
+    const menuData = {
+        breakfast: [
+            { bn: "পরোটা", en: "Paratha", price: 15, sub: "Roti" },
+            { bn: "তন্দুল রুটি", en: "Tandoori Roti", price: 15, sub: "Roti" },
+            { bn: "রুমালি রুটি", en: "Rumali Roti", price: 30, sub: "Roti" },
+            { bn: "চিকেন সুপ (কক মুরগী)", en: "Chicken Soup", price: 150, sub: "Curry" },
+            { bn: "গরুর কলিজা ভুনা", en: "Beef Liver Bhuna", price: 240, sub: "Curry" },
+            { bn: "গরু ভুনা", en: "Beef Bhuna", price: 260, sub: "Curry" },
+            { bn: "ডাউল", en: "Dal", price: 30, sub: "Curry" },
+            { bn: "ভাজি", en: "Bhaji", price: 30, sub: "Curry" },
+            { bn: "মুগ ডাউল", en: "Mug Dal", price: 40, sub: "Curry" },
+            { bn: "নিহারী (গরু)", en: "Nihari (Beef)", price: 200, sub: "Curry" },
+            { bn: "খাসির পায়া", en: "Mutton Paya", price: 180, sub: "Curry" },
+            { bn: "সুজির হালুয়া", en: "Suji Halwa", price: 40, sub: "Dessert" },
+            { bn: "গাজরের হালুয়া", en: "Gajorer Halwa", price: 80, sub: "Dessert" },
+            { bn: "পুডিং", en: "Pudding", price: 80, sub: "Dessert" },
+            { bn: "ডিম ভাজি", en: "Egg Fry", price: 30, sub: "Curry" },
+            { bn: "বীফ খিচুড়ী", en: "Beef Khichuri", price: 260, sub: "Rice" },
+            { bn: "চিকেন খিচুড়ী (কক মুরগী)", en: "Chicken Khichuri", price: 220, sub: "Rice" },
+            { bn: "ডিম খিচুড়ী", en: "Egg Khichuri", price: 100, sub: "Rice" },
+            { bn: "ঝাল ফ্রাই (কক মুরগী)", en: "Jhalfry (Chicken)", price: 150, sub: "Curry" },
+            { bn: "চা", en: "Tea", price: 30, sub: "Beverage" }
+        ],
+        lunch: [
+            { bn: "সাদা ভাত", en: "Plain Rice", price: 50, sub: "Rice" },
+            { bn: "চিকেন বিরিয়ানী", en: "Chicken Biryani", price: 210, sub: "Rice" },
+            { bn: "বীফ হান্ডি", en: "Beef Handi", price: 280, sub: "Curry" },
+            { bn: "মাটন হান্ডি", en: "Mutton Handi", price: 280, sub: "Curry" },
+            { bn: "বীফ পেশওয়ারী", en: "Beef Peshawari", price: 280, sub: "Curry" },
+            { bn: "বিফ রেজালা", en: "Beef Rezala", price: 300, sub: "Curry" },
+            { bn: "রুই মাছ", en: "Rui Fish", price: 240, sub: "Fish" },
+            { bn: "বোয়াল মাছ", en: "Boal Fish", price: 260, sub: "Fish" },
+            { bn: "ঢেলা মাছ ফ্রাই", en: "Dhela Fish Fry", price: 200, sub: "Fish" },
+            { bn: "পুঁটি মাছ ফ্রাই", en: "Puti Fish Fry", price: 200, sub: "Fish" },
+            { bn: "গুতম মাছ ফ্রাই", en: "Gutom Fish Fry", price: 200, sub: "Fish" },
+            { bn: "ছোট মাছ", en: "Small Fish", price: 220, sub: "Fish" },
+            { bn: "ঘন ডাউল", en: "Thick Dal", price: 30, sub: "Curry" },
+            { bn: "সবজি", en: "Vegetable", price: 40, sub: "Curry" },
+            { bn: "দেশী মুরগী", en: "Deshi Murgi", price: 320, sub: "Curry" },
+            { bn: "হাঁস ভুনা", en: "Duck Bhuna", price: 250, sub: "Curry" },
+            { bn: "গরু ভুনা", en: "Beef Bhuna", price: 260, sub: "Curry" },
+            { bn: "বিফ হান্ডি পোলাও", en: "Beef Handi Pulao", price: 360, sub: "Rice" },
+            { bn: "মাটন হান্ডি পোলাও", en: "Mutton Handi Pulao", price: 360, sub: "Rice" },
+            { bn: "বীফ হান্ডি খিচুড়ী", en: "Beef Handi Khichuri", price: 360, sub: "Rice" },
+            { bn: "মাটন হান্ডি খিচুড়ী", en: "Mutton Handi Khichuri", price: 360, sub: "Rice" },
+            { bn: "বীফ খিচুড়ী", en: "Beef Khichuri", price: 260, sub: "Rice" },
+            { bn: "চিকেন খিচুড়ী (কক মুরগী)", en: "Chicken Khichuri", price: 220, sub: "Rice" },
+            { bn: "ডিম খিচুড়ী", en: "Egg Khichuri", price: 100, sub: "Rice" },
+            { bn: "চিকেন রোস্ট (কক মুরগী)", en: "Chicken Roast", price: 150, sub: "Curry" },
+            { bn: "চিকেন ঝালফ্রাই (কক মুরগী)", en: "Chicken Jhalfry", price: 150, sub: "Curry" },
+            { bn: "টাকি ভর্তা", en: "Taki Vorta", price: 30, sub: "Vorta" },
+            { bn: "চিংড়ি ভর্তা", en: "Chingri Vorta", price: 30, sub: "Vorta" },
+            { bn: "কাঁচ কলা ভর্তা", en: "Kach kola Vorta", price: 30, sub: "Vorta" },
+            { bn: "ডিম ভর্তা", en: "Dim Vorta", price: 30, sub: "Vorta" },
+            { bn: "আলু ভর্তা", en: "Alu Vorta", price: 30, sub: "Vorta" },
+            { bn: "বেগুন ভর্তা", en: "Begun Vorta", price: 30, sub: "Vorta" },
+            { bn: "চ্যাপা শুটকি ভর্তা", en: "Chyapa Shutki Vorta", price: 30, sub: "Vorta" },
+            { bn: "লইটকা শুটকি ভর্তা", en: "Litka Shutki Vorta", price: 30, sub: "Vorta" },
+            { bn: "চিংড়ি শুটকি ভর্তা", en: "Chingri Shutki Vorta", price: 30, sub: "Vorta" },
+            { bn: "কাচকি শুটকি ভর্তা", en: "Kachki Shutki Vorta", price: 30, sub: "Vorta" },
+            { bn: "বোরহানি (১ গ্লাস)", en: "Borhani (1 Glass)", price: 50, sub: "Beverage" },
+            { bn: "বোরহানি (১ লিটার)", en: "Borhani (1L)", price: 200, sub: "Beverage" },
+            { bn: "ফিরনি জাফরানি", en: "Firni Jafrani", price: 60, sub: "Dessert" },
+            { bn: "জাফরানি জর্দা", en: "Jafrani Zorda", price: 100, sub: "Dessert" },
+            { bn: "পুডিং", en: "Pudding", price: 80, sub: "Dessert" },
+            { bn: "ফালুদা", en: "Faluda", price: 180, sub: "Dessert" },
+            { bn: "লাচ্ছি", en: "Lassi", price: 80, sub: "Beverage" },
+            { bn: "চা", en: "Tea", price: 30, sub: "Beverage" },
+            { bn: "রুমালী রুটি", en: "Rumali Roti", price: 30, sub: "Roti" }
+        ],
+        dinner: [
+            { bn: "বিফ শিক কাবাব", en: "Beef Seekh Kabab", price: 230, sub: "Kabab" },
+            { bn: "বিফ তিল্লি কাবাব", en: "Beef Tilli Kabab", price: 220, sub: "Kabab" },
+            { bn: "বিফ আদানি কাবাব", en: "Beef Adani Kabab", price: 250, sub: "Kabab" },
+            { bn: "বিফ ক্ষীর কাবাব", en: "Beef Kheer Kabab", price: 220, sub: "Kabab" },
+            { bn: "শেফ স্পেশাল বিফ আফগানি", en: "Chef Beef Afghani", price: 350, sub: "Kabab" },
+            { bn: "চিকেন বডি কাবাব", en: "Chicken Boti Kabab", price: 200, sub: "Kabab" },
+            { bn: "চিকেন টিক্কা", en: "Chicken Tikka", price: 260, sub: "Kabab" },
+            { bn: "চিকেন রেশমী কাবাব", en: "Chicken Reshmi Kabab", price: 200, sub: "Kabab" },
+            { bn: "চিকেন আফগানী কাবাব", en: "Chicken Afghani Kabab", price: 220, sub: "Kabab" },
+            { bn: "চিকেন হারিয়ালী কাবাব", en: "Chicken Hariyali Kabab", price: 200, sub: "Kabab" },
+            { bn: "চিকেন জুসি কাবাব", en: "Chicken Juicy Kabab", price: 200, sub: "Kabab" },
+            { bn: "চিকেন মালাই তান্দুরি", en: "Chicken Malai Tandoori", price: 170, sub: "Kabab" },
+            { bn: "চিকেন উইঙ্গস (৩ পিস)", en: "Chicken Wings (3 Pcs)", price: 200, sub: "Kabab" },
+            { bn: "চিকেন স্পাইসি বডি", en: "Chicken Spicy Boti", price: 200, sub: "Kabab" },
+            { bn: "চিকেন মাসালা চাপ", en: "Chicken Masala Chaap", price: 180, sub: "Kabab" },
+            { bn: "চিকেন সরমা", en: "Chicken Shawarma", price: 130, sub: "Snacks" },
+            { bn: "চিকেন আচারী", en: "Chicken Achari", price: 200, sub: "Curry" },
+            { bn: "ডামস্টিক", en: "Drumstick", price: 300, sub: "Snacks" },
+            { bn: "চিকেন আদানি কাবাব", en: "Chicken Adani Kabab", price: 200, sub: "Kabab" },
+            { bn: "কোরাল ফিস বারবি কিউ", en: "Koral Fish BBQ", price: 350, sub: "Fish" }, 
+            { bn: "টোনাফিস বারবি কিউ", en: "Tuna Fish BBQ", price: 320, sub: "Fish" },
+            { bn: "রুপচাঁদা ফিস বারবি কিউ", en: "Rupchanda Fish BBQ", price: 450, sub: "Fish" },
+            { bn: "স্যালমন ফিস বারবি কিউ", en: "Salmon Fish BBQ", price: 500, sub: "Fish" },
+            { bn: "তেলাপিয়া ফিস বারবি কিউ", en: "Telapia Fish BBQ", price: 180, sub: "Fish" },
+            { bn: "অ্যারাবিয়ান চিংড়ি বারবি কিউ", en: "Arabian Prawn BBQ", price: 360, sub: "Fish" },
+            { bn: "চিকেন গ্রীল", en: "Chicken Grill", price: 130, sub: "Kabab" },
+            { bn: "চিকেন তান্দুরি", en: "Chicken Tandoori", price: 150, sub: "Kabab" },
+            { bn: "চিকেন বারবি কিউ", en: "Chicken BBQ", price: 160, sub: "Kabab" },
+            { bn: "কোয়েল ভুনা", en: "Quail Bhuna", price: 250, sub: "Curry" },
+            { bn: "কবুতর ভুনা", en: "Pigeon Bhuna", price: 300, sub: "Curry" },
+            { bn: "হাঁস বারবি কিউ", en: "Duck BBQ", price: 1200, sub: "Kabab" },
+            { bn: "চিংড়ি ৩ পিস", en: "Prawn 3 Pcs", price: 250, sub: "Fish" },
+            { bn: "کاکڑا", en: "Crab", price: 200, sub: "Fish" },
+            { bn: "মগজ ভাজা", en: "Brain Fry", price: 250, sub: "Curry" },
+            { bn: "বিফ রেজালা", en: "Beef Rezala", price: 300, sub: "Curry" },
+            { bn: "বিফ হান্ডি", en: "Beef Handi", price: 280, sub: "Curry" },
+            { bn: "মাটন হান্ডি", en: "Mutton Handi", price: 280, sub: "Curry" },
+            { bn: "বিফ পেশওয়ারী", en: "Beef Peshawari", price: 280, sub: "Curry" },
+            { bn: "স্পেশাল নান", en: "Special Naan", price: 40, sub: "Roti" },
+            { bn: "শাহী পরটা", en: "Shahi Paratha", price: 30, sub: "Roti" },
+            { bn: "রুমালি রুটি", en: "Rumali Roti", price: 30, sub: "Roti" },
+            { bn: "দেশী মুরগী", en: "Deshi Murgi", price: 320, sub: "Curry" },
+            { bn: "হাঁস ভুনা", en: "Duck Bhuna", price: 250, sub: "Curry" },
+            { bn: "বট ভুনা", en: "Bot Bhuna", price: 180, sub: "Curry" },
+            { bn: "গরু ভুনা", en: "Gorur Bhuna", price: 260, sub: "Curry" },
+            { bn: "পেশোয়ারি নলি (প্রতি পিস)", en: "Peshawari Noli (Pcs)", price: 500, sub: "Curry" },
+            { bn: "বিফ হান্ডি পোলাও", en: "Beef Handi Pulao", price: 360, sub: "Rice" },
+            { bn: "মাটন হান্ডি পোলাও", en: "Mutton Handi Pulao", price: 360, sub: "Rice" },
+            { bn: "বিফ হান্ডি খিচুড়ী", en: "Beef Handi Khichuri", price: 360, sub: "Rice" },
+            { bn: "মাটন হান্ডি খিচুড়ী", en: "Mutton Handi Khichuri", price: 360, sub: "Rice" },
+            { bn: "সাদা পোলাও", en: "Plain Pulao", price: 80, sub: "Rice" },
+            { bn: "খিচুড়ী", en: "Khichuri", price: 80, sub: "Rice" },
+            { bn: "সাদা ভাত", en: "Plain Rice", price: 50, sub: "Rice" },
+            { bn: "বিফ খিচুড়ী", en: "Beef Khichuri", price: 260, sub: "Rice" },
+            { bn: "চিকেন খিচুড়ী (কক মুরগী)", en: "Chicken Khichuri", price: 220, sub: "Rice" },
+            { bn: "ডিম খিচুড়ী", en: "Egg Khichuri", price: 100, sub: "Rice" },
+            { bn: "চিকেন রোস্ট (কক মুরগী)", en: "Chicken Roast", price: 150, sub: "Curry" },
+            { bn: "চিকেন ঝালফ্রাই (কক মুরগী)", en: "Chicken Jhalfry", price: 150, sub: "Curry" },
+            { bn: "সবজি", en: "Vegetable", price: 40, sub: "Curry" },
+            { bn: "বোরহানি (১ গ্লাস)", en: "Borhani (1 Glass)", price: 50, sub: "Beverage" },
+            { bn: "বোরহানি (১ লিটার)", en: "Borhani (1 Liter)", price: 200, sub: "Beverage" },
+            { bn: "ফিরনি জাফরানি", en: "Firni Jafrani", price: 60, sub: "Dessert" },
+            { bn: "জাফরানি জর্দা", en: "Jafrani Zorda", price: 100, sub: "Dessert" },
+            { bn: "গাজরের হালুয়া", en: "Gajorer Halwa", price: 80, sub: "Dessert" },
+            { bn: "পুডিং", en: "Pudding", price: 80, sub: "Dessert" },
+            { bn: "ফালুদা", en: "Faluda", price: 180, sub: "Dessert" },
+            { bn: "লাচ্ছি", en: "Lassi", price: 80, sub: "Beverage" },
+            { bn: "চা", en: "Tea", price: 30, sub: "Beverage" }
+        ],
+        beverage: [
+            { bn: "খাবার পানি (হাফ লিটার)", en: "Mineral Water (0.5L)", price: 20, sub: "Water" },
+            { bn: "খাবার পানি (১ লিটার)", en: "Mineral Water (1L)", price: 35, sub: "Water" },
+            { bn: "খাবার পানি (২ লিটার)", en: "Mineral Water (2L)", price: 60, sub: "Water" },
+            { bn: "কোকাকোলা (ক্যান)", en: "Coca Cola (Can)", price: 50, sub: "Cold Drinks" },
+            { bn: "৭আপ (ক্যান)", en: "7Up (Can)", price: 50, sub: "Cold Drinks" },
+            { bn: "স্প্রাইট (ক্যান)", en: "Sprite (Can)", price: 50, sub: "Cold Drinks" },
+            { bn: "ফ্যান্টা (ক্যান)", en: "Fanta (Can)", price: 50, sub: "Cold Drinks" },
+            { bn: "কোকাকোলা (২৫০ মিলি)", en: "Coca Cola(250ml)", price: 25, sub: "Cold Drinks" },
+            { bn: "৭আপ (২৫০ মিলি)", en: "7Up (250ml)", price: 25, sub: "Cold Drinks" },
+            { bn: "কোকাকোলা (৪০০ মিলি)", en: "Coca Cola (400ml)", price: 40, sub: "Cold Drinks" },
+            { bn: "৭আপ (৪০০ মিলি)", en: "7Up (400ml)", price: 40, sub: "Cold Drinks" },
+            { bn: "কোকাকোলা (১ লিটার)", en: "Coca Cola (1L)", price: 80, sub: "Cold Drinks" },
+            { bn: "৭আপ (১ লিটার)", en: "7Up (1L)", price: 80, sub: "Cold Drinks" },
+            { bn: "কোকাকোলা (২ লিটার)", en: "Coca Cola (2L)", price: 140, sub: "Cold Drinks" },
+            { bn: "৭আপ (২ লিটার)", en: "7Up (2L)", price: 140, sub: "Cold Drinks" },
+            { bn: "এনার্জি ড্রিংক", en: "Energy Drink", price: 80, sub: "Cold Drinks" }
+        ]
+    };
+
+    const subcatLabels = {
+        bn: { ALL: "সব খাবার", Roti: "রুটি/পরোটা", Curry: "তরকারি/ভুনা", Rice: "ভাত/খিচুড়ি", Dessert: "মিষ্টি/হালুয়া", Beverage: "চা/বোরহানি", Kabab: "কাবাব/গ্রিল", Fish: "মাছ আইটেম", Vorta: "ভর্তা", Snacks: "স্ন্যাক্স", Water: "পানি", "Cold Drinks": "কোল্ড ড্রিংকস" },
+        en: { ALL: "All", Roti: "Roti/Paratha", Curry: "Curry Items", Rice: "Rice/Khichuri", Dessert: "Desserts", Beverage: "Tea/Borhani", Kabab: "Kabab & Grill", Fish: "Fish Items", Vorta: "Vorta", Snacks: "Snacks", Water: "Water", "Cold Drinks": "Soft Drinks" }
+    };
+
+    const uiText = {
+        bn: {
+            title: "আবেশ হোটেল এন্ড রেস্টুরেন্ট", branch: "শাখা-৪",
+            waiterSelectDefault: "-- ওয়েটার নাম নির্বাচন করুন --", waiterAddNew: "+ নতুন ওয়েটার যোগ করুন",
+            supervisor: "সুপারভাইজার এর নাম",
+            lblCategory: "ক্যাটাগরি নির্বাচন করুন", lblItem: "খাবার নির্বাচন করুন",
+            lblEditPrice: "মূল্য পরিবর্তন করুন (প্রয়োজন হলে):", lblCustomName: "খাবারের নাম লিখুন:",
+            lblCustomPrice: "মূল্য নির্ধারণ করুন:", addBtn: "আইটেম যোগ করুন", 
+            thItem: "আইটেম", thPrice: "মূল্য", thQty: "পরিমাণ", thTotal: "মোট", grandTotal: "সর্বমোট:",
+            sigWaiter: "ওয়েটার স্বাক্ষর", sigSupervisor: "সুপারভাইজার স্বাক্ষর",
+            print: "মেক বিল / ডাউনলোড ছবি", clear: "রিসেট", langBtn: "English",
+            searchPlaceholder: "খাবার খুঁজুন (Search Food Name)...", lblQtySelect: "পরিমাণ নির্বাচন করুন (Quantity)",
+            cats: ["সকালের নাস্তা (Breakfast)", "দুপুরের খাবার (Lunch)", "বিকালের নাস্তা ও কাবাব (Dinner & Kabab)", "পানি ও কোল্ড ড্রিংকস (Beverage & Extras)", "-- নিজস্ব খাবার যোগ করুন (Custom Item) --"],
+            dutyInactive: "🛑 ডিউটি সেশন বন্ধ আছে। শুরু করতে নিচে ক্লিক করুন।", dutyActive: "🟢 ডিউটি রানিং আছে... ব্যাকগ্রাউন্ডে বিল ট্র্যাক করা হচ্ছে।",
+            btnStart: "🕒 ডিউটি শুরু করুন", btnEnd: "📊 ডিউটি শেষ ও সামারি", btnReset: "🔄 নতুন শিফট শুরু", btnDownloadSum: "📥 ডাউনলোড সামারি",
+            sumTitle: "📋 আজকের ডিউটি সেশন রিপোর্ট", sumThFood: "খাবারের নাম", sumThQty: "মোট পরিমাণ", sumThTotal: "মোট টাকা", sumTotalLabel: "সর্বমোট কালেকশন:",
+            billNoLabel: "বিল নং", btnResetCounter: "🔢 রিসেট বিল নম্বর"
+        },
+        en: {
+            title: "Abesh Hotel & Restaurant", branch: "Branch-4",
+            waiterSelectDefault: "-- Choose Waiter --", waiterAddNew: "+ Add New Waiter",
+            supervisor: "Supervisor Name",
+            lblCategory: "Select Category", lblItem: "Select Dish / Item",
+            lblEditPrice: "Edit Unit Price (If needed):", lblCustomName: "Enter Custom Item Name:",
+            lblCustomPrice: "Set Price:", addBtn: "Add Item", 
+            thItem: "Item Name", thPrice: "Price", thQty: "Qty", thTotal: "Total", grandTotal: "Grand Total:",
+            sigWaiter: "Waiter Sign", sigSupervisor: "Supervisor Sign",
+            print: "Make Bill / Download Image", clear: "Reset", langBtn: "বাংলা",
+            searchPlaceholder: "Search food items...", lblQtySelect: "Select Quantity",
+            cats: ["Breakfast", "Lunch", "Dinner & Kabab", "Beverage & Extras", "-- Custom Item Maker --"],
+            dutyInactive: "🛑 Duty session is inactive. Click below to start tracking.", dutyActive: "🟢 Duty session is active... tracking sales data.",
+            btnStart: "🕒 Start Duty", btnEnd: "📊 End Duty & Summary", btnReset: "🔄 Start New Shift", btnDownloadSum: "📥 Download Summary",
+            sumTitle: "📋 Daily Duty Session Report", sumThFood: "Food Item", sumThQty: "Total Qty", sumThTotal: "Total Amount", sumTotalLabel: "Grand Total Collection:",
+            billNoLabel: "Bill No", btnResetCounter: "🔢 Reset Bill No"
+        }
+    };
+
+    // --- Light / Dark Theme Management Engine ---
+    function initTheme() {
+        const activeTheme = localStorage.getItem('abesh_theme') || 'light';
+        document.documentElement.setAttribute('data-theme', activeTheme);
+        document.getElementById('themeBtn').textContent = activeTheme === 'dark' ? '☀️' : '🌙';
+    }
+
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('abesh_theme', newTheme);
+        document.getElementById('themeBtn').textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    }
+
+    // Tab Navigation Logic
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        
+        if (tabName === 'bill') {
+            document.getElementById('tabBill').classList.add('active');
+            document.getElementById('contentBill').classList.add('active');
+        } else if (tabName === 'shift') {
+            document.getElementById('tabShift').classList.add('active');
+            document.getElementById('contentShift').classList.add('active');
+        }
+    }
+
+    function convertNumerals(num) {
+        if (currentLang === 'en') return num.toString();
+        const bnDigits = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+        return num.toString().replace(/\d/g, d => bnDigits[d]);
+    }
+
+    function updateDateTime() {
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+        document.getElementById('liveDateTime').textContent = now.toLocaleDateString(currentLang === 'bn' ? 'bn-BD' : 'en-US', options);
+    }
+
+    // --- Dynamic Receipt Counter Engine ---
+    function initializeBillNumberCounter() {
+        const todayStr = new Date().toDateString();
+        const savedDate = localStorage.getItem('abesh_bill_date');
+        const savedNumber = localStorage.getItem('abesh_bill_count');
+
+        if (savedDate !== todayStr) {
+            currentBillNo = 1;
+            localStorage.setItem('abesh_bill_date', todayStr);
+            localStorage.setItem('abesh_bill_count', currentBillNo.toString());
+        } else {
+            currentBillNo = savedNumber ? parseInt(savedNumber) : 1;
+        }
+        updateBillNumberDisplay();
+    }
+
+    function manuallyResetBillCounter() {
+        let textConfirm = currentLang === 'bn' ? "আপনি কি নিশ্চিত যে বিল নম্বরটি আবার ১ থেকে শুরু করতে চান?" : "Are you sure you want to reset the bill number back to 1?";
+        if (confirm(textConfirm)) {
+            currentBillNo = 1;
+            localStorage.setItem('abesh_bill_count', currentBillNo.toString());
+            updateBillNumberDisplay();
+        }
+    }
+
+    function incrementBillNumber() {
+        currentBillNo += 1;
+        localStorage.setItem('abesh_bill_count', currentBillNo.toString());
+        updateBillNumberDisplay();
+    }
+
+    function updateBillNumberDisplay() {
+        const label = uiText[currentLang].billNoLabel;
+        document.getElementById('billNumberDisplay').textContent = `${label}: ${convertNumerals(currentBillNo)}`;
+    }
+
+    function initializePeopleData() {
+        const savedSupervisor = localStorage.getItem('abesh_supervisor_name') || "";
+        document.getElementById('supervisorInput').value = savedSupervisor;
+        document.getElementById('printSupervisorName').textContent = savedSupervisor;
+
+        let storedWaiters = localStorage.getItem('abesh_waiters_list');
+        if (!storedWaiters) {
+            localStorage.setItem('abesh_waiters_list', JSON.stringify(defaultWaiters));
+        }
+        populateWaitersDropdown();
+        loadDutySessionState();
+        initializeBillNumberCounter();
+    }
+
+    // --- Shift Operations Duty Engine ---
+    function loadDutySessionState() {
+        const storedActive = localStorage.getItem('abesh_duty_active');
+        const storedHistory = localStorage.getItem('abesh_duty_history');
+        const storedStart = localStorage.getItem('abesh_duty_start_time');
+
+        if (storedActive === "true") {
+            dutyActive = true;
+            dutyStartTime = storedStart || "";
+            dutyHistoryLog = JSON.parse(storedHistory) || {};
+            
+            document.getElementById('dutyStatusText').textContent = uiText[currentLang].dutyActive;
+            document.getElementById('btnStartDuty').style.display = "none";
+            document.getElementById('btnEndDuty').style.display = "inline-block";
+            document.getElementById('btnDownloadSum').style.display = "inline-block";
+            document.getElementById('btnResetDuty').style.display = "inline-block";
+        } else {
+            dutyActive = false;
+            document.getElementById('dutyStatusText').textContent = uiText[currentLang].dutyInactive;
+            document.getElementById('btnStartDuty').style.display = "inline-block";
+            document.getElementById('btnEndDuty').style.display = "none";
+            document.getElementById('btnDownloadSum').style.display = "none";
+            document.getElementById('btnResetDuty').style.display = "none";
+        }
+    }
+
+    function startDutySession() {
+        dutyActive = true;
+        const now = new Date();
+        dutyStartTime = now.toLocaleString(currentLang === 'bn' ? 'bn-BD' : 'en-US');
+        dutyHistoryLog = {};
+
+        localStorage.setItem('abesh_duty_active', "true");
+        localStorage.setItem('abesh_duty_start_time', dutyStartTime);
+        localStorage.setItem('abesh_duty_history', JSON.stringify(dutyHistoryLog));
+
+        document.getElementById('dutyStatusText').textContent = uiText[currentLang].dutyActive;
+        document.getElementById('btnStartDuty').style.display = "none";
+        document.getElementById('btnEndDuty').style.display = "inline-block";
+        document.getElementById('btnDownloadSum').style.display = "inline-block";
+        document.getElementById('btnResetDuty').style.display = "inline-block";
+        document.getElementById('summaryBox').style.display = "none";
+    }
+
+    function trackBillItemsIntoDutyLog() {
+        if (!dutyActive) return;
+
+        bill.forEach(bItem => {
+            const foodKey = bItem.item.bn; 
+            if (!dutyHistoryLog[foodKey]) {
+                dutyHistoryLog[foodKey] = {
+                    bn: bItem.item.bn,
+                    en: bItem.item.en,
+                    qty: 0,
+                    totalCash: 0
+                };
+            }
+            dutyHistoryLog[foodKey].qty += bItem.qty;
+            dutyHistoryLog[foodKey].totalCash += (bItem.item.price * bItem.qty);
+        });
+
+        localStorage.setItem('abesh_duty_history', JSON.stringify(dutyHistoryLog));
+    }
+
+    function generateDutySummary() {
+        const summaryBox = document.getElementById('summaryBox');
+        const summaryList = document.getElementById('summaryList');
+        const now = new Date();
+        const endTimeStr = now.toLocaleString(currentLang === 'bn' ? 'bn-BD' : 'en-US');
+
+        document.getElementById('sumStartText').innerHTML = `<b>${currentLang === 'bn' ? 'শুরুর সময়:' : 'Start Time:'}</b> ${dutyStartTime}`;
+        document.getElementById('sumEndText').innerHTML = `<b>${currentLang === 'bn' ? 'শেষের সময়:' : 'Finishing Time:'}</b> ${endTimeStr}`;
+        
+        summaryList.innerHTML = '';
+        let grandDutyTotal = 0;
+
+        Object.keys(dutyHistoryLog).forEach(key => {
+            const data = dutyHistoryLog[key];
+            const name = currentLang === 'bn' ? data.bn : data.en;
+            grandDutyTotal += data.totalCash;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${name}</td>
+                <td class="text-center">${convertNumerals(data.qty)}</td>
+                <td class="text-right">${convertNumerals(data.totalCash)} ৳</td>
+            `;
+            summaryList.appendChild(tr);
+        });
+
+        document.getElementById('sumTotalVal').textContent = `${convertNumerals(grandDutyTotal)} ৳`;
+        summaryBox.style.display = "block";
+    }
+
+    function downloadDutySummaryImage() {
+        generateDutySummary();
+        const summaryBox = document.getElementById('summaryBox');
+        
+        html2canvas(summaryBox, {
+            scale: 3,
+            backgroundColor: '#ffffff',
+            useCORS: true
+        }).then(canvas => {
+            let now = new Date();
+            let dateStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
+            let timeStr = `${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
+            
+            let customFileName = `Duty_Report_${dateStr}_${timeStr}.png`;
+
+            const imageLink = document.createElement('a');
+            imageLink.style.display = 'none';
+            imageLink.setAttribute('download', customFileName);
+            imageLink.href = canvas.toDataURL('image/png');
+            
+            document.body.appendChild(imageLink);
+            imageLink.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(imageLink);
+            }, 100);
+        }).catch(err => {
+            console.error("Error generating snapshot: ", err);
+        });
+    }
+
+    function resetDutySession() {
+        let confirmation = confirm(currentLang === 'bn' ? "আপনি কি নিশ্চিত যে নতুন শিফট শুরু করতে চান? আগের ডাটা রিসেট হয়ে যাবে।" : "Are you sure you want to reset and start a new shift?");
+        if (!confirmation) return;
+
+        dutyActive = false;
+        dutyStartTime = "";
+        dutyHistoryLog = {};
+
+        localStorage.removeItem('abesh_duty_active');
+        localStorage.removeItem('abesh_duty_start_time');
+        localStorage.removeItem('abesh_duty_history');
+
+        document.getElementById('summaryBox').style.display = "none";
+        loadDutySessionState();
+    }
+
+    function populateWaitersDropdown() {
+        const wSelect = document.getElementById('waiterSelect');
+        wSelect.innerHTML = '';
+        
+        let waiters = JSON.parse(localStorage.getItem('abesh_waiters_list')) || defaultWaiters;
+
+        let defaultOpt = document.createElement('option');
+        defaultOpt.value = "";
+        defaultOpt.textContent = uiText[currentLang].waiterSelectDefault;
+        wSelect.appendChild(defaultOpt);
+
+        waiters.forEach(name => {
+            let opt = document.createElement('option');
+            opt.value = name;
+            opt.textContent = name;
+            wSelect.appendChild(opt);
+        });
+
+        let actionOpt = document.createElement('option');
+        actionOpt.value = "_ADD_NEW_";
+        actionOpt.textContent = uiText[currentLang].waiterAddNew;
+        wSelect.appendChild(actionOpt);
+    }
+
+    function handleWaiterSelection() {
+        const wSelect = document.getElementById('waiterSelect');
+        if (wSelect.value === "_ADD_NEW_") {
+            let msg = currentLang === 'bn' ? "নতুন ওয়েটার এর নাম লিখুন:" : "Enter new waiter's name:";
+            let newName = prompt(msg);
+            if (newName && newName.trim() !== "") {
+                let waiters = JSON.parse(localStorage.getItem('abesh_waiters_list')) || defaultWaiters;
+                if (!waiters.includes(newName.trim())) {
+                    waiters.push(newName.trim());
+                    localStorage.setItem('abesh_waiters_list', JSON.stringify(waiters));
+                }
+                populateWaitersDropdown();
+                wSelect.value = newName.trim();
+            } else {
+                wSelect.value = "";
+            }
+        }
+        document.getElementById('printWaiterName').textContent = wSelect.value;
+    }
+
+    function saveSupervisorAndUpdateSig() {
+        const val = document.getElementById('supervisorInput').value;
+        localStorage.setItem('abesh_supervisor_name', val);
+        document.getElementById('printSupervisorName').textContent = val;
+    }
+
+    function handleCategoryChange() {
+        selectedSubcat = 'ALL';
+        document.getElementById('searchBar').value = '';
+        renderSubcategoryTabs();
+        populateDropdown();
+    }
+
+    function renderSubcategoryTabs() {
+        const cat = document.getElementById('categorySelect').value;
+        const wrapper = document.getElementById('subcatWrapper');
+        wrapper.innerHTML = '';
+
+        if (cat === 'custom') return;
+
+        const subcats = ['ALL', ...new Set(menuData[cat].map(item => item.sub))];
+
+        subcats.forEach(sub => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `btn-subcat ${selectedSubcat === sub ? 'active' : ''}`;
+            btn.textContent = subcatLabels[currentLang][sub] || sub;
+            btn.onclick = () => {
+                selectedSubcat = sub;
+                document.querySelectorAll('.btn-subcat').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                populateDropdown();
+            };
+            wrapper.appendChild(btn);
+        });
+    }
+
+    function populateDropdown() {
+        const cat = document.getElementById('categorySelect').value;
+        const standardPanel = document.getElementById('standardItemPanel');
+        const customPanel = document.getElementById('customItemPanel');
+        
+        if (cat === 'custom') {
+            standardPanel.style.display = 'none';
+            customPanel.style.display = 'block';
+            return;
+        }
+
+        standardPanel.style.display = 'block';
+        customPanel.style.display = 'none';
+
+        const select = document.getElementById('itemSelect');
+        select.innerHTML = '';
+        
+        const searchText = document.getElementById('searchBar').value.toLowerCase().trim();
+
+        menuData[cat].forEach((item, index) => {
+            if (selectedSubcat !== 'ALL' && item.sub !== selectedSubcat) return;
+
+            if (searchText !== '') {
+                const matchBn = item.bn.toLowerCase().includes(searchText);
+                const matchEn = item.en.toLowerCase().includes(searchText);
+                if (!matchBn && !matchEn) return;
+            }
+
+            const option = document.createElement('option');
+            option.value = `${cat}-${index}`;
+            option.textContent = `${currentLang === 'bn' ? item.bn : item.en} — ${convertNumerals(item.price)} ৳`;
+            select.appendChild(option);
+        });
+
+        updatePriceEditField();
+    }
+
+    function updatePriceEditField() {
+        const select = document.getElementById('itemSelect');
+        if (!select.value) {
+            document.getElementById('editablePrice').value = '';
+            return;
+        }
+        const [cat, idx] = select.value.split('-');
+        document.getElementById('editablePrice').value = menuData[cat][idx].price;
+    }
+
+    function setQuickQty(val, btnElement) {
+        selectedQuantityValue = val;
+        document.getElementById('customQtyInput').value = '';
+        document.querySelectorAll('.btn-qty-opt').forEach(btn => btn.classList.remove('active'));
+        if (btnElement) btnElement.classList.add('active');
+    }
+
+    function handleCustomQty(inputElement) {
+        const val = parseInt(inputElement.value);
+        if (!isNaN(val) && val > 0) {
+            selectedQuantityValue = val;
+            document.querySelectorAll('.btn-qty-opt').forEach(btn => btn.classList.remove('active'));
+        } else {
+            const firstBtn = document.querySelector('.btn-qty-opt');
+            setQuickQty(1, firstBtn);
+        }
+    }
+
+    function resetQuantityPicker() {
+        const firstBtn = document.querySelector('.btn-qty-opt');
+        setQuickQty(1, firstBtn);
+    }
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'bn' ? 'en' : 'bn';
+        
+        document.getElementById('hotelName').textContent = uiText[currentLang].title;
+        document.getElementById('hotelBranch').textContent = uiText[currentLang].branch;
+        document.getElementById('supervisorInput').placeholder = uiText[currentLang].supervisor;
+        document.getElementById('lblCategory').textContent = uiText[currentLang].lblCategory;
+        document.getElementById('lblItem').textContent = uiText[currentLang].lblItem;
+        document.getElementById('lblEditPrice').textContent = uiText[currentLang].lblEditPrice;
+        document.getElementById('lblCustomName').textContent = uiText[currentLang].lblCustomName;
+        document.getElementById('lblCustomPrice').textContent = uiText[currentLang].lblCustomPrice;
+        document.getElementById('lblQtySelect').textContent = uiText[currentLang].lblQtySelect;
+        document.getElementById('addBtn').textContent = uiText[currentLang].addBtn;
+        document.getElementById('thItem').textContent = uiText[currentLang].thItem;
+        document.getElementById('thPrice').textContent = uiText[currentLang].thPrice;
+        document.getElementById('thQty').textContent = uiText[currentLang].thQty;
+        document.getElementById('thTotal').textContent = uiText[currentLang].thTotal;
+        document.getElementById('tdGrandTotal').textContent = uiText[currentLang].grandTotal;
+        document.getElementById('sigWaiterLabel').textContent = uiText[currentLang].sigWaiter;
+        document.getElementById('sigSupervisorLabel').textContent = uiText[currentLang].sigSupervisor;
+        document.getElementById('btnPrint').textContent = uiText[currentLang].print;
+        document.getElementById('btnClear').textContent = uiText[currentLang].clear;
+        document.getElementById('langBtn').textContent = uiText[currentLang].langBtn;
+        document.getElementById('searchBar').placeholder = uiText[currentLang].searchPlaceholder;
+        document.getElementById('btnResetCounter').textContent = uiText[currentLang].btnResetCounter;
+
+        document.getElementById('btnStartDuty').textContent = uiText[currentLang].btnStart;
+        document.getElementById('btnEndDuty').textContent = uiText[currentLang].btnEnd;
+        document.getElementById('btnDownloadSum').textContent = uiText[currentLang].btnDownloadSum;
+        document.getElementById('btnResetDuty').textContent = uiText[currentLang].btnReset;
+        document.getElementById('sumTitle').textContent = uiText[currentLang].sumTitle;
+        document.getElementById('sumThFood').textContent = uiText[currentLang].sumThFood;
+        document.getElementById('sumThQty').textContent = uiText[currentLang].sumThQty;
+        document.getElementById('sumThTotal').textContent = uiText[currentLang].sumThTotal;
+        document.getElementById('sumTotalLabel').textContent = uiText[currentLang].sumTotalLabel;
+
+        const catSelect = document.getElementById('categorySelect');
+        for (let i = 0; i < catSelect.options.length; i++) {
+            catSelect.options[i].text = uiText[currentLang].cats[i];
+        }
+
+        updateDateTime();
+        populateWaitersDropdown();
+        renderSubcategoryTabs();
+        populateDropdown();
+        renderBill();
+        loadDutySessionState();
+        updateBillNumberDisplay();
+        if(document.getElementById('summaryBox').style.display === "block") {
+            generateDutySummary();
+        }
+    }
+
+    function addItem() {
+        const cat = document.getElementById('categorySelect').value;
+        let finalItem = {};
+        
+        if (cat === 'custom') {
+            const name = document.getElementById('customItemName').value.trim();
+            const price = parseFloat(document.getElementById('customItemPrice').value);
+            
+            if (!name || isNaN(price)) {
+                alert(currentLang === 'bn' ? "দয়া করে সঠিক নাম এবং মূল্য লিখুন" : "Please enter a valid name and price");
+                return;
+            }
+            finalItem = { bn: name, en: name, price: price };
+            
+            document.getElementById('customItemName').value = '';
+            document.getElementById('customItemPrice').value = '';
+        } else {
+            const selectEl = document.getElementById('itemSelect');
+            if (!selectEl.value) {
+                alert(currentLang === 'bn' ? "দয়া করে একটি খাবার নির্বাচন করুন!" : "Please select an item!");
+                return;
+            }
+            const [originalCat, idx] = selectEl.value.split('-');
+            const baseItem = menuData[originalCat][idx];
+            const editedPrice = parseFloat(document.getElementById('editablePrice').value);
+            
+            finalItem = {
+                bn: baseItem.bn,
+                en: baseItem.en,
+                price: isNaN(editedPrice) ? baseItem.price : editedPrice
+            };
+        }
+
+        const qtyToAdd = selectedQuantityValue;
+        const existingItem = bill.find(i => i.item.bn === finalItem.bn && i.item.price === finalItem.price);
+        
+        if (existingItem) {
+            existingItem.qty += qtyToAdd;
+        } else {
+            bill.push({ item: finalItem, qty: qtyToAdd });
+        }
+        
+        const addBtn = document.getElementById('addBtn');
+        const oldText = addBtn.textContent;
+        addBtn.textContent = currentLang === 'bn' ? "✓ যোগ করা হয়েছে ✓" : "✓ Added Successfully ✓";
+        addBtn.classList.add('success-pop');
+        
+        setTimeout(() => {
+            addBtn.textContent = oldText;
+            addBtn.classList.remove('success-pop');
+        }, 800);
+        
+        resetQuantityPicker();
+        renderBill();
+    }
+
+    function removeItem(index) {
+        bill.splice(index, 1);
+        renderBill();
+    }
+
+    function updateQty(index, newQty) {
+        if(newQty <= 0) {
+            removeItem(index);
+        } else {
+            bill[index].qty = parseInt(newQty);
+            renderBill();
+        }
+    }
+
+    function renderBill() {
+        const tbody = document.getElementById('billItems');
+        tbody.innerHTML = '';
+        let grandTotal = 0;
+
+        bill.forEach((billItem, index) => {
+            const name = currentLang === 'bn' ? billItem.item.bn : billItem.item.en;
+            const total = billItem.item.price * billItem.qty;
+            grandTotal += total;
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${name}</td>
+                <td class="text-right">${convertNumerals(billItem.item.price)} ৳</td>
+                <td class="text-center">
+                    <span class="qty-static-text">${convertNumerals(billItem.qty)}</span>
+                    <input type="number" class="qty-input" value="${billItem.qty}" min="1" onchange="updateQty(${index}, this.value)">
+                </td>
+                <td class="text-right">${convertNumerals(total)} ৳</td>
+                <td class="text-center action-column"><button class="remove-btn" onclick="removeItem(${index})">×</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('grandTotalVal').textContent = `${convertNumerals(grandTotal)} ৳`;
+    }
+
+    function downloadBillAsImage() {
+        if (bill.length === 0) {
+            alert(currentLang === 'bn' ? "বিল এ কোনো খাবার যোগ করা হয়নি!" : "No items added to the bill!");
+            return;
+        }
+
+        trackBillItemsIntoDutyLog();
+
+        const receiptArea = document.getElementById('printableReceiptArea');
+        const metaInputs = document.getElementById('metaInputContainer');
+        const actionColumns = document.querySelectorAll('.action-column');
+
+        receiptArea.classList.add('image-render-mode');
+        if (metaInputs) metaInputs.classList.add('hide-for-image');
+        actionColumns.forEach(el => el.classList.add('hide-for-image'));
+
+        html2canvas(receiptArea, {
+            scale: 3, 
+            backgroundColor: '#ffffff',
+            useCORS: true
+        }).then(canvas => {
+            receiptArea.classList.remove('image-render-mode');
+            if (metaInputs) metaInputs.classList.remove('hide-for-image');
+            actionColumns.forEach(el => el.classList.remove('hide-for-image'));
+
+            let totalAmount = bill.reduce((sum, current) => sum + (current.item.price * current.qty), 0);
+            let waiter = document.getElementById('waiterSelect').value.trim() || "No_Waiter";
+            let supervisor = document.getElementById('supervisorInput').value.trim() || "No_Supervisor";
+            
+            let now = new Date();
+            let dateStr = `${String(now.getDate()).padStart(2, '0')}-${String(now.getMonth() + 1).padStart(2, '0')}-${now.getFullYear()}`;
+            let timeStr = `${String(now.getHours()).padStart(2, '0')}-${String(now.getMinutes()).padStart(2, '0')}`;
+
+            let hotelTitle = currentLang === 'bn' ? "Abesh Hotel" : uiText.en.title;
+            let branchTitle = "Branch-4";
+
+            let customFileName = `BillNo_${currentBillNo}_${totalAmount}Tk_${waiter}_${supervisor}_${dateStr}_${timeStr}_${hotelTitle}_${branchTitle}.png`;
+            customFileName = customFileName.replace(/[\\\/\:\*\?\"<>\|]/g, "_");
+
+            const imageLink = document.createElement('a');
+            imageLink.style.display = 'none';
+            imageLink.setAttribute('download', customFileName);
+            imageLink.href = canvas.toDataURL('image/png');
+            
+            document.body.appendChild(imageLink);
+            imageLink.click();
+            
+            setTimeout(() => {
+                document.body.removeChild(imageLink);
+                incrementBillNumber();
+                clearBill();
+            }, 100);
+            
+        }).catch(err => {
+            console.error("Error generating snap image asset: ", err);
+            receiptArea.classList.remove('image-render-mode');
+            if (metaInputs) metaInputs.classList.remove('hide-for-image');
+            actionColumns.forEach(el => el.classList.remove('hide-for-image'));
+        });
+    }
+
+    function clearBill() {
+        bill = [];
+        document.getElementById('waiterSelect').value = '';
+        document.getElementById('searchBar').value = '';
+        selectedSubcat = 'ALL';
+        resetQuantityPicker();
+        document.getElementById('printWaiterName').textContent = '';
+        renderSubcategoryTabs();
+        populateDropdown();
+        renderBill();
+    }
+
+    setInterval(updateDateTime, 1000);
+    updateDateTime();
+    initTheme();
+    initializePeopleData();
+    renderSubcategoryTabs();
+    populateDropdown();
+</script>
+
+</body>
+</html>
